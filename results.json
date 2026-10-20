@@ -1,0 +1,39 @@
+{
+  "question": "Can a class-balanced LightGBM model with multi-scale temporal context localise state-change boundaries more accurately than a standard MLP stand-in for the paper's network on a public time-ordered sensor recording?",
+  "method": "Chronological 70/30 split of OpenML EEG Eye State; baseline MLPClassifier on 14 channels + 5-sample window; improved class-balanced LightGBM on causal multi-scale rolling features with CV-selected median smoothing; boundary F1 with +-50-sample tolerance on label changes.",
+  "dataset": {
+    "name": "OpenML EEG Eye State (data_id 1471)",
+    "source_url": "https://www.openml.org/d/1471",
+    "n_rows": 14980,
+    "n_train": 10486,
+    "n_test": 4494,
+    "same_as_paper": false,
+    "baseline_is_papers_method": false
+  },
+  "metric_name": "boundary_f1_tol50",
+  "higher_is_better": true,
+  "baseline": "scikit-learn MLPClassifier (hidden 64-32, early stopping) on standardised 14 channels plus a 5-sample sliding window; per-frame predictions with no smoothing. Stand-in for the paper's neural encoder, not a re-implementation.",
+  "improved": "LightGBM with balanced class weights on causal multi-scale rolling mean/std/deviation features (windows 5, 25, 125 samples); probabilities median-smoothed with a window chosen by time-ordered CV on the training set.",
+  "metrics": {
+    "baseline_score": 0.2378161142058435,
+    "improved_score": 0.3654423654423655,
+    "improvement": 0.12762625123652202,
+    "baseline_score_std": 0.04665510714522148,
+    "improved_score_std": 0.009147142468571632,
+    "selected_smoothing_window": 31,
+    "test_true_boundaries": 9,
+    "baseline_boundary_precision": 0.13792280998269257,
+    "improved_boundary_precision": 0.2388888888888889,
+    "baseline_boundary_recall": 0.8888888888888888,
+    "improved_boundary_recall": 0.7777777777777778,
+    "baseline_mean_offset": 21.814814814814813,
+    "improved_mean_offset": 45.59259259259259,
+    "baseline_frame_accuracy": 0.45379023883696784,
+    "improved_frame_accuracy": 0.4068387479602433,
+    "baseline_frame_f1": 0.4478936408048791,
+    "improved_frame_f1": 0.20125648623214618,
+    "baseline_f1": 0.4478936408048791,
+    "improved_f1": 0.20125648623214618
+  },
+  "notes": "Single-recording EEG eye-state labels are used as a stand-in for segment boundaries; they are not action boundaries. Rolling features are trailing (causal); test rows may use training rows as past context, as in streaming use. Median smoothing is centred and therefore uses predictions from neighbouring future frames within the test recording, an offline-segmentation assumption. Only the smoothing window is tuned (3-fold TimeSeriesSplit on training data); the baseline is untuned. Three seeds only; dataset is 14,980 rows so no subsampling was needed. The paper's result is not stated, so no comparison to it is made."
+}
