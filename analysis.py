@@ -44,9 +44,14 @@ def load_data():
     url = meta.get("url") or f"https://www.openml.org/data/v1/download/{meta['file_id']}"
     print("Downloading", url)
     data, _ = arff.loadarff(io.StringIO(get(url).text))
-    names = [c for c in data.dtype.names if c != "eyeDetection"]
-    X = np.column_stack([data[c].astype(float) for c in names])
-    y = np.array([int(v.decode() if isinstance(v, bytes) else v) for v in data["eyeDetection"]])
+    names = list(data.dtype.names)
+    # The label attribute name can differ between ARFF exports (e.g. eyeDetection / Class),
+    # so locate it by name, falling back to the last attribute (the target in OpenML's ARFF).
+    label = next((c for c in names if c.lower() in ("eyedetection", "class", "label", "target")), names[-1])
+    print(f"Label column: {label!r}; feature columns: {len(names) - 1}")
+    feats = [c for c in names if c != label]
+    X = np.column_stack([data[c].astype(float) for c in feats])
+    y = np.array([int(float(v.decode() if isinstance(v, bytes) else v)) for v in data[label]])
     return X, y
 
 

@@ -1,23 +1,12 @@
-# Multi-scale LightGBM vs MLP for state-change boundary localisation on EEG Eye State
+# Boundary localisation on EEG Eye State
 
-Motivation: "Centre stage: Centricity-based audio-visual temporal action detection" (2023) proposes a one-stage anchor-free detector that fuses audio and visual encoders with multi-scale cross-attention and a centricity head to localise where actions start and end in untrimmed sequences. Its network is too heavy to re-implement here, so this experiment asks a simpler question about the boundary-localisation part of the problem.
+Question: can a class-balanced LightGBM model with multi-scale causal context localise state-change boundaries more accurately than a standard MLP baseline on the OpenML EEG Eye State recording?
 
-Question: Can a class-balanced LightGBM model with multi-scale temporal context localise state-change boundaries more accurately than a standard MLP stand-in for the paper's network on a public time-ordered sensor recording?
+Setup: chronological 70/30 split (first 70% train, last 30% test), 3 seeds (42, 43, 44), boundary F1 with a ±50-sample tolerance.
 
-Dataset: OpenML EEG Eye State (data_id 1471), 14,980 time-ordered EEG samples with 14 channels and a binary eye-state label. Boundaries are label changes. The data is chronologically split (first 70% train, last 30% test). This is not the paper's own dataset.
+Run: `pip install -r requirements.txt && python analysis.py`. Writes `results.json` and `figures/boundary_f1.png`.
 
-Baseline: scikit-learn MLPClassifier on 14 channels plus a short sliding window, with per-frame predictions. It is a stand-in for the paper's neural encoder, not a re-implementation.
-
-Improved: class-balanced LightGBM on causal multi-scale rolling mean, std and deviation features, with median smoothing of predicted labels. The smoothing window is chosen by time-ordered cross-validation on the training set.
-
-## How to run
-
-```
-pip install -r requirements.txt
-python analysis.py
-```
-
-Results: written to `results.json` (charts saved to `figures/`).
+Fix note: the label column is now located by name (`eyeDetection`, `Class`, `label`, `target`, case-insensitive), falling back to the last ARFF attribute, because the attribute name in the downloaded ARFF did not match `eyeDetection` exactly. The method, split, baseline and metrics are unchanged.
 
 ## Reference
 
